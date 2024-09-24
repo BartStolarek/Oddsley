@@ -167,3 +167,96 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Django specific
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# If you're using a custom user model
+# accounts/migrations/
+
+# Django Rest Framework
+api/migrations/
+
+# Django static files
+static/
+
+# Django collected static files
+staticfiles/
+
+# Django media files
+media/
+
+# Django secret key
+*.secret_key
+
+# Django database configuration
+*.db
+
+# Django migrations
+**/migrations/*.py
+**/migrations/*.pyc
+!**/migrations/__init__.py
+
+# Django celery
+celerybeat-schedule.*
+
+# Django channels
+daphne.sock
+
+# Django Debug Toolbar
+debug_toolbar/
+
+# Django Compressor
+CACHE/
+
+# Django Silk
+silk/
+
+# Django Haystack
+whoosh_index/
+
+# Django Allauth
+allauth/
+
+# Django CMS
+cms/
+
+# Django Tastypie
+api/
+
+# Django Oscar
+oscar/
+
+# Django Wagtail
+wagtail/
+
+# Django Ckeditor
+ckeditor/
+
+# Django Suit
+suit/
+
+# Django Grappelli
+grappelli/
+
+# Django Filebrowser
+filebrowser/
+
+# Django Rosetta
+rosetta/
+
+# Django Rest Framework Docs
+rest_framework_docs/
+
+# Django Cleanup
+cleanup/
+
+# Django Extensions
+django_extensions/
