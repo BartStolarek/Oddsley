@@ -1,0 +1,93 @@
+├── .gitignore
+├── .python-version
+├── README.md
+├── backend
+│   ├── .env
+│   ├── README.md
+│   ├── config
+│   │   ├── __init__.py
+│   │   ├── asgi.py
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── management
+│   │   │   ├── __init__.py
+│   │   │   └── commands
+│   │   │       ├── __init__.py
+│   │   │       └── format.py
+│   │   ├── migrations
+│   │   │   ├── __init__.py
+│   │   ├── models.py
+│   │   ├── tests.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── db.sqlite3
+│   ├── manage.py
+│   ├── requirements.txt
+├── frontend
+│   ├── .eslintignore
+│   ├── .eslintrc.json
+│   ├── .gitignore
+│   ├── .next
+│   ├── .npmrc
+│   ├── LICENSE
+│   ├── README.md
+│   ├── app
+│   │   ├── about
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── blog
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── docs
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── error.tsx
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── pricing
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   └── providers.tsx
+│   ├── components
+│   │   ├── counter.tsx
+│   │   ├── icons.tsx
+│   │   ├── navbar.tsx
+│   │   ├── primitives.ts
+│   │   └── theme-switch.tsx
+│   ├── config
+│   │   ├── fonts.ts
+│   │   └── site.ts
+│   ├── next-env.d.ts
+│   ├── next.config.js
+│   ├── node_modules
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── public
+│   │   ├── favicon.ico
+│   │   ├── next.svg
+│   │   └── vercel.svg
+│   ├── styles
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   └── types
+│       └── index.ts
+├── infrastructure
+│   ├── ci-cd
+│   │   ├── Jenkinsfile
+│   │   └── github-actions-workflow.yml
+│   ├── kubernetes
+│   │   ├── backend-deployment.yaml
+│   │   ├── frontend-deployment.yaml
+│   │   └── model-deployment.yaml
+│   └── terraform
+│       ├── main.tf
+│       ├── outputs.tf
+│       └── variables.tf
+├── model
+├── scripts
