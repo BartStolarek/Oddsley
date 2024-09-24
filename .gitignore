@@ -168,6 +168,34 @@ ENV/
 # mypy
 .mypy_cache/
 
+# TensorFlow / Keras
+*.h5
+*.keras
+*.ckpt
+*.pb
+saved_model/
+model_v*/
+
+# TensorFlow specific
+events.out.tfevents.*
+graph.pbtxt
+checkpoint
+model.ckpt.*
+train.tfrecords
+validation.tfrecords
+*.tfrecord
+/models/
+
+# TensorBoard
+tensorboard_logs/
+
+# TensorFlow Serving
+tensorflow_serving/
+
+# Model artifacts
+model_artifacts/
+wandb/
+
 # Django specific
 *.log
 *.pot
