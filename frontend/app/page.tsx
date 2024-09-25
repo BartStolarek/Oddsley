@@ -49,6 +49,9 @@ export default function Home() {
           <span>
             Get started by editing <Code color="primary">app/page.tsx</Code>
           </span>
+          <span>
+            
+          </span>
         </Snippet>
       </div>
     </section>
