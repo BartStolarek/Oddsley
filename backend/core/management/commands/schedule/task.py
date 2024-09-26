@@ -1,9 +1,8 @@
-# In backend/core/management/commands/schedule_task.py
-
 from django.core.management.base import BaseCommand
 from django_q.tasks import schedule
 from django_q.models import Schedule
 from core.task_registry import TaskRegistry
+import uuid
 
 class Command(BaseCommand):
     help = 'Schedule a task with various timing options'
@@ -28,7 +27,8 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(str(e)))
             return
 
-        schedule_name = f'{task_name}_schedule'
+        unique_id = str(uuid.uuid4())
+        schedule_name = f'{task_name}_schedule_{unique_id}'
 
         schedule_kwargs = {
             'func': f'core.tasks.{task_name}',
@@ -52,10 +52,7 @@ class Command(BaseCommand):
         if options['params']:
             schedule_kwargs['args'] = options['params']
 
-        # Delete any existing schedule with the same name
-        Schedule.objects.filter(name=schedule_name).delete()
-
         # Create the schedule
         schedule(**schedule_kwargs)
 
-        self.stdout.write(self.style.SUCCESS(f'Task {task_name} scheduled successfully'))
+        self.stdout.write(self.style.SUCCESS(f'Task {task_name} scheduled successfully with ID: {unique_id}'))
