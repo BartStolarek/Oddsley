@@ -14,4 +14,6 @@ class Command(BaseCommand):
             return
 
         scheduled_tasks.delete()
-        self.stdout.write(self.style.SUCCESS(f'Successfully cancelled all {count} scheduled tasks.'))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Successfully cancelled all {count} scheduled tasks.'))

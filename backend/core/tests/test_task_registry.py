@@ -1,6 +1,7 @@
 # In backend/core/tests/test_task_registry.py
 
 from django.test import TestCase
+
 from core.task_registry import TaskRegistry
 
 
@@ -16,7 +17,8 @@ class TaskRegistryTests(TestCase):
     def test_register_task(self):
         TaskRegistry.register('mock_task', mock_task)
         self.assertIn('mock_task', TaskRegistry._tasks)
-        self.assertEqual(TaskRegistry._tasks['mock_task'](), "This is a mock task.")
+        self.assertEqual(TaskRegistry._tasks['mock_task'](),
+                         "This is a mock task.")
 
     def test_get_registered_task(self):
         TaskRegistry.register('mock_task', mock_task)

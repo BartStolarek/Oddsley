@@ -7,4 +7,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         async_task('core.tasks.hello_world_task')
-        self.stdout.write(self.style.SUCCESS('Hello World job queued successfully'))
+        self.stdout.write(
+            self.style.SUCCESS('Hello World job queued successfully'))

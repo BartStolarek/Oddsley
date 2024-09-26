@@ -13,6 +13,8 @@ class Command(BaseCommand):
         try:
             job = OrmQ.objects.get(id=job_id)
             job.delete()
-            self.stdout.write(self.style.SUCCESS(f'Job {job_id} cancelled successfully.'))
+            self.stdout.write(
+                self.style.SUCCESS(f'Job {job_id} cancelled successfully.'))
         except OrmQ.DoesNotExist:
-            self.stdout.write(self.style.ERROR(f'No job found with ID: {job_id}'))
+            self.stdout.write(
+                self.style.ERROR(f'No job found with ID: {job_id}'))

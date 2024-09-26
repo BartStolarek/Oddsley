@@ -15,4 +15,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Scheduled tasks:'))
         for task in scheduled_tasks:
             task_id = task.name.split('_')[-1]
-            self.stdout.write(f'ID: {task_id}, Name: {task.func}, Schedule: {task.schedule_type}, Next run: {task.next_run}')
+            self.stdout.write(
+                f'ID: {task_id}, Name: {task.func}, Schedule: {task.schedule_type}, Next run: {task.next_run}'
+            )
