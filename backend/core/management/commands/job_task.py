@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django_q.tasks import async_task
 import uuid
 
+
 class Command(BaseCommand):
     help = 'Queue a job with a specified task'
 

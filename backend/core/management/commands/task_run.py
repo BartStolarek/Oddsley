@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from core.task_registry import TaskRegistry
 
+
 class Command(BaseCommand):
     help = 'Run a specified task immediately'
 

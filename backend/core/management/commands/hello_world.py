@@ -1,7 +1,6 @@
-# In backend/core/management/commands/hello_world.py
-
 from django.core.management.base import BaseCommand
 from django_q.tasks import async_task
+
 
 class Command(BaseCommand):
     help = 'Runs a hello world job'

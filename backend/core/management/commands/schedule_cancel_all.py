@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django_q.models import Schedule
 
+
 class Command(BaseCommand):
     help = 'Cancel all scheduled tasks'
 

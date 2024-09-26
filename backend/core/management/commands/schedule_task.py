@@ -4,6 +4,7 @@ from django_q.models import Schedule
 from core.task_registry import TaskRegistry
 import uuid
 
+
 class Command(BaseCommand):
     help = 'Schedule a task with various timing options'
 

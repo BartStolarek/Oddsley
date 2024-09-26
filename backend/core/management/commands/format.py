@@ -1,7 +1,7 @@
 import subprocess
 from django.core.management.base import BaseCommand
 from django.conf import settings
-import os
+
 
 class Command(BaseCommand):
     help = 'Runs autoflake, isort, and yapf formatters over the project'
