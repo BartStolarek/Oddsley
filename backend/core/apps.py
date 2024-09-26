@@ -7,4 +7,4 @@ class CoreConfig(AppConfig):
     
     def ready(self):
         # This will ensure tasks are loaded and registered
-        import backend.core.tasks
+        import core.tasks

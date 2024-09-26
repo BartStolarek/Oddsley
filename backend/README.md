@@ -42,11 +42,11 @@ Django management commands are a powerful feature that allows you to interact wi
 
 The following commands are available for immediate task execution:
 
-- `python manage.py task:run <task_name> [--args arg1 arg2 ...]`: Runs a specified task immediately
+- `python manage.py task_run <task_name> [--args arg1 arg2 ...]`: Runs a specified task immediately
 
 Example:
 ```
-python manage.py task:run hello_world_task
+python manage.py task_run hello_world_task
 ```
 
 This command will execute the specified task immediately and display the result in the console. It's useful for testing tasks or running one-off operations.
@@ -55,18 +55,18 @@ This command will execute the specified task immediately and display the result 
 
 Django-Q is used for job queuing in this project. The following commands are available to manage jobs:
 
-- `python manage.py job:task <task_name> [--args arg1 arg2 ...]`: Queues a job with a specified task
+- `python manage.py job_task <task_name> [--args arg1 arg2 ...]`: Queues a job with a specified task
 
     Example:
     ```
-    python manage.py job:task hello_world_task --args param1 param2
+    python manage.py job_task hello_world_task --args param1 param2
     ```
 
-- `python manage.py job:list`: Displays a list of all currently queued jobs with their unique IDs
+- `python manage.py job_list`: Displays a list of all currently queued jobs with their unique IDs
 
-- `python manage.py job:cancel <job_id>`: Cancels a specific queued job using its unique ID
+- `python manage.py job_cancel <job_id>`: Cancels a specific queued job using its unique ID
 
-- `python manage.py job:cancel_all`: Cancels all currently queued jobs
+- `python manage.py job_cancel_all`: Cancels all currently queued jobs
 
 Jobs are tasks that are queued for later execution by Django-Q workers. This allows for asynchronous processing and better management of long-running or resource-intensive tasks.
 
@@ -75,7 +75,7 @@ Jobs are tasks that are queued for later execution by Django-Q workers. This all
 
 Django-Q is used for task scheduling in this project. The following commands are available to manage scheduled tasks:
 
-- `python manage.py schedule:task <task_name> [options]`: Schedules a task with various timing options
+- `python manage.py schedule_task <task_name> [options]`: Schedules a task with various timing options
 
     Options:
     - `--schedule_type`: Type of schedule (MINUTES, HOURLY, DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY)
@@ -88,14 +88,14 @@ Django-Q is used for task scheduling in this project. The following commands are
 
     Example:
     ```
-    python manage.py schedule:schedule_task hello_world_task --schedule_type MINUTES --interval 5
+    python manage.py schedule_schedule_task hello_world_task --schedule_type MINUTES --interval 5
     ```
 
-- `python manage.py schedule:list`: Displays a list of all currently scheduled tasks with their unique IDs
+- `python manage.py schedule_list`: Displays a list of all currently scheduled tasks with their unique IDs
 
-- `python manage.py schedule:cancel <task_id>`: Cancels a specific scheduled task using its unique ID
+- `python manage.py schedule_cancel <task_id>`: Cancels a specific scheduled task using its unique ID
 
-- `python manage.py schedule:cancel_all`: Cancels all currently scheduled tasks
+- `python manage.py schedule_cancel_all`: Cancels all currently scheduled tasks
 
 
 ## 8. Static Files
