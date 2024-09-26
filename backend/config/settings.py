@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'core',
     'rest_framework',
     'drf_yasg',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -143,3 +144,21 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configure Django Q in settings.py
+Q_CLUSTER = {
+    'name': os.getenv('Q_CLUSTER_NAME', 'myproject'),
+    'workers': int(os.getenv('Q_CLUSTER_WORKERS', 4)),
+    'recycle': int(os.getenv('Q_CLUSTER_RECYCLE', 500)),
+    'timeout': int(os.getenv('Q_CLUSTER_TIMEOUT', 60)),
+    'compress': os.getenv('Q_CLUSTER_COMPRESS', 'True') == 'True',
+    'save_limit': int(os.getenv('Q_CLUSTER_SAVE_LIMIT', 250)),
+    'queue_limit': int(os.getenv('Q_CLUSTER_QUEUE_LIMIT', 500)),
+    'cpu_affinity': int(os.getenv('Q_CLUSTER_CPU_AFFINITY', 1)),
+    'label': os.getenv('Q_CLUSTER_LABEL', 'Django Q2'),
+    'redis': {
+        'host': os.getenv('Q_CLUSTER_REDIS_HOST', '127.0.0.1'),
+        'port': int(os.getenv('Q_CLUSTER_REDIS_PORT', 6379)),
+        'db': int(os.getenv('Q_CLUSTER_REDIS_DB', 0)),
+    }
+}
