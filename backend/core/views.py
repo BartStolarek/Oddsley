@@ -1,9 +1,12 @@
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.models import User
-from .models import Sport, Competition, Team, Event, OddsSnapshot, Outcome
-from .serializers import UserSerializer, SportSerializer, CompetitionSerializer, TeamSerializer, EventSerializer, OddsSnapshotSerializer, OutcomeSerializer
+
+from .models import Competition, Event, OddsSnapshot, Outcome, Sport, Team
+from .serializers import (CompetitionSerializer, EventSerializer,
+                          OddsSnapshotSerializer, OutcomeSerializer,
+                          SportSerializer, TeamSerializer, UserSerializer)
 
 
 def home(request):
@@ -47,35 +50,42 @@ def home(request):
     """
     return HttpResponse(html_content)
 
+
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+
 
 class SportViewSet(viewsets.ModelViewSet):
     queryset = Sport.objects.all()
     serializer_class = SportSerializer
     permission_classes = [IsAuthenticated]
 
+
 class CompetitionViewSet(viewsets.ModelViewSet):
     queryset = Competition.objects.all()
     serializer_class = CompetitionSerializer
     permission_classes = [IsAuthenticated]
+
 
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
     permission_classes = [IsAuthenticated]
 
+
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
 
+
 class OddsSnapshotViewSet(viewsets.ModelViewSet):
     queryset = OddsSnapshot.objects.all()
     serializer_class = OddsSnapshotSerializer
     permission_classes = [IsAuthenticated]
+
 
 class OutcomeViewSet(viewsets.ModelViewSet):
     queryset = Outcome.objects.all()

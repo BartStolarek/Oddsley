@@ -2,6 +2,7 @@
 
 from django.utils.module_loading import import_string
 
+
 class TaskRegistry:
     _tasks = {}
 
@@ -16,4 +17,5 @@ class TaskRegistry:
         try:
             return import_string(name)
         except ImportError:
-            raise ValueError(f"Task {name} not found in registry or as importable string")
+            raise ValueError(
+                f"Task {name} not found in registry or as importable string")

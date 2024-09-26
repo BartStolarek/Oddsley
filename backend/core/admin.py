@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Region, Sport, Competition, Team, Bookmaker, Market, Event, OddsSnapshot, Outcome, EventResult
+
+from .models import (Bookmaker, Competition, Event, EventResult, Market,
+                     OddsSnapshot, Outcome, Region, Sport, Team)
 
 admin.site.register(Region)
 admin.site.register(Sport)

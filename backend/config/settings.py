@@ -13,9 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+from django.core.management.commands.runserver import Command as runserver
 from dotenv import load_dotenv
 
-from django.core.management.commands.runserver import Command as runserver
 runserver.default_port = "5000"
 
 # Load environment variables from .env file
