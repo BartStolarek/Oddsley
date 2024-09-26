@@ -15,6 +15,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from django.core.management.commands.runserver import Command as runserver
+runserver.default_port = "5000"
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'django_q',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +61,22 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
+
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+AUTH_USER_MODEL = 'auth.User'
 
 ROOT_URLCONF = 'config.urls'
 
