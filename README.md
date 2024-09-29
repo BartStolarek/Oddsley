@@ -29,6 +29,25 @@
 
         cker-compose up --no-build`
 
+## Execute Commands within a Service (shell)
+
+- Execute a command in a running container (Django commands can be found in `root/backend/README.md`)
+
+        `docker-compose exec backend <django command>`
+        `docker-compose exec frontend npm run test`
+
+### Backend - To add a task to the queue
+
+1. Make sure the worker container image has latest build and is running
+
+        `docker-compose up -d worker`
+
+2. Execute the following command to add a task to the queue
+
+        `docker-compose exec backend python manage.py job_task hello_world`
+        
+This will add the example task `hello_world` to the queue.
+
 ## Stop
 - Stop all running services
 

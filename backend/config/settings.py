@@ -15,6 +15,11 @@ from pathlib import Path
 
 from django.core.management.commands.runserver import Command as runserver
 from dotenv import load_dotenv
+import sys
+from datetime import datetime
+from pathlib import Path
+from loguru import logger
+import logging  # Add this import
 
 runserver.default_port = "5000"
 
@@ -24,6 +29,101 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Remove the default handler
+logger.remove()
+
+# Configure Loguru logger
+logger_format = (
+    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+    "<level>{level: <8}</level> | "
+    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+    "<level>{message}</level>"
+)
+
+# SECURITY WARNING: don't run with debug turned on in production!
+ENVIRONMENT = os.getenv('DJANGO_ENVIRONMENT', 'Development').capitalize()
+DEBUG = ENVIRONMENT != 'Production'
+
+LOGGING_LEVEL = os.getenv("DJANGO_LOGGING", "INFO")
+
+# Loguru configuration
+logger.remove()  # Remove default handler
+
+log_dir = BASE_DIR / "logs"
+log_dir.mkdir(exist_ok=True)
+
+now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+logger.configure(
+    handlers=[
+        {
+            "sink": sys.stderr,
+            "format": "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+            "level": "DEBUG" if DEBUG else "INFO",
+            "colorize": True,
+        },
+        {
+            "sink": log_dir / f"Django-{now}.log",
+            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+            "rotation": "10 MB",
+            "compression": "zip",
+            "level": "DEBUG" if DEBUG else "INFO",
+            "enqueue": True,
+        },
+    ]
+)
+
+
+# Intercept Django logging
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        # Get corresponding Loguru level if it exists
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        # Find caller from where originated the logged message
+        frame, depth = sys._getframe(6), 6
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+
+
+# Django logging configuration
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "loguru": {
+            "class": "config.settings.InterceptHandler",
+        },
+    },
+    "root": {
+        "handlers": ["loguru"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["loguru"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.server": {
+            "handlers": ["loguru"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django_q": {
+            "handlers": ["loguru"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -32,8 +132,10 @@ SECRET_KEY = os.getenv(
     'DJANGO_SECRET_KEY',
     'django-insecure-h)o$-2c^l)rh_)p#d-7w+rqi2a#$2+zhvwkra@21!mzr4!%97e')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
+
+# Check if running in Docker
+IN_DOCKER = os.environ.get('DOCKER_CONTAINER', False)
+
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
@@ -101,14 +203,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
+if ENVIRONMENT == 'Production':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -119,6 +214,14 @@ else:
             'PORT': os.getenv('DB_PORT'),
         }
     }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / f'{ENVIRONMENT}_db.sqlite3',
+        }
+    }
+    
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -176,7 +279,7 @@ Q_CLUSTER = {
     'cpu_affinity': int(os.getenv('Q_CLUSTER_CPU_AFFINITY', 1)),
     'label': os.getenv('Q_CLUSTER_LABEL', 'Django Q2'),
     'redis': {
-        'host': os.getenv('Q_CLUSTER_REDIS_HOST', '127.0.0.1'),
+        'host': 'redis' if IN_DOCKER else 'localhost',
         'port': int(os.getenv('Q_CLUSTER_REDIS_PORT', 6379)),
         'db': int(os.getenv('Q_CLUSTER_REDIS_DB', 0)),
     }

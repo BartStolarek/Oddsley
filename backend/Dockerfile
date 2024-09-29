@@ -5,6 +5,7 @@ FROM python:3.12.4-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE=config.settings
+ENV DOCKER_CONTAINER=1
 
 # Set the working directory in the container
 WORKDIR /app

@@ -1,2 +1,4 @@
-def hello_world_task():
-    print("Hello World task executed")
+def hello_world_task(*args, _task_name=None, _job_id=None, **kwargs):
+    print("Hello, World!")
+    print(f"Task: {_task_name}, Job ID: {_job_id}")
+    
