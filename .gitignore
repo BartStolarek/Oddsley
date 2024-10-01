@@ -45,7 +45,6 @@ ml/.coverage
 ml/data/raw/*
 ml/data/processed/*
 *.csv
-*.json
 *.pkl
 *.h5
 *.hdf5
