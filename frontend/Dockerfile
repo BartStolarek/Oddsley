@@ -21,3 +21,4 @@ EXPOSE 3000
 
 # Run the application
 CMD ["npm", "run", "dev"]
+
