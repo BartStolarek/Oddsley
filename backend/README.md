@@ -38,7 +38,17 @@ Q_CLUSTER_REDIS_PORT=6379
 Q_CLUSTER_REDIS_DB=0
 ```
 
-2. Follow docker instructions from the root README to utilise the capabilities of the backend server.
+2. Follow docker instructions from the root README to start the docker backend server.
+
+3. Create a super user for the backend Django admin by running the following command:
+
+```
+docker-compose exec backend python manage.py createsuperuser
+```
+
+## Admin Panel
+
+To access the admin panel, navigate to `http://localhost:5000/admin` in your browser and log in with the superuser credentials you created.
 
 ## Environments
 
