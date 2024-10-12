@@ -1,6 +1,9 @@
 # Use an official Node runtime as the base image
 FROM node:18-alpine
 
+# Install necessary dependencies
+RUN apk add --no-cache libc6-compat
+
 # Set the working directory in the container
 WORKDIR /app
 
