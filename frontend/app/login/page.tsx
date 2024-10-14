@@ -35,8 +35,8 @@ export default function AuthPage() {
             {!isLogin && (
               <Input
                 type="text"
-                label="Name"
-                placeholder="Enter your name"
+                label="Username"
+                placeholder="Enter your username"
                 required
               />
             )}
