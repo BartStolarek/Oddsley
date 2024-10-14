@@ -2,6 +2,7 @@
 set -e
 
 # Apply database migrations
+python manage.py makemigrations
 python manage.py migrate
 
 # Check if a command was passed

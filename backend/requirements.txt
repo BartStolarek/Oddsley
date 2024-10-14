@@ -4,6 +4,7 @@ autoflake==2.3.1
 blessed==1.20.0
 coverage==7.6.1
 Django==5.1.1
+django-allauth==65.0.2
 django-cors-headers==4.4.0
 django-picklefield==3.2
 django-q2==1.7.2

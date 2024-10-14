@@ -2,6 +2,9 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from .serializers import RegisterSerializer
 
 from .models import Competition, Event, OddsSnapshot, Outcome, Sport, Team
 from .serializers import (CompetitionSerializer, EventSerializer,
@@ -50,6 +53,10 @@ def home(request):
     """
     return HttpResponse(html_content)
 
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = RegisterSerializer
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()

@@ -1,5 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+from .views import RegisterView
 
 from . import views
 from .views import (CompetitionViewSet, EventViewSet, OddsSnapshotViewSet,
@@ -17,4 +18,5 @@ router.register(r'outcomes', OutcomeViewSet)
 urlpatterns = [
     path('', views.home, name='home'),
     path('', include(router.urls)),
+    path('auth/register/', RegisterView.as_view(), name='auth_regiser')
 ]
