@@ -5,16 +5,20 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend:/app
+      - backend_venv:/app/.venv
+      - backend_logs:/app/logs
     ports:
       - "5000:5000"
     environment:
       - PYTHON_VERSION=3.12.4
       - DJANGO_SETTINGS_MODULE=config.settings
+      - DJANGO_LOG_DIR=/app/logs
     env_file:
       - ./backend/.env
     depends_on:
       - redis
     command: ["/app/entrypoint.sh"]
+    user: myuser
 
   frontend:
     build: 
@@ -29,11 +33,13 @@ services:
       - NODE_VERSION=18
       - NODE_ENV=development
     command: npm run dev
+    user: myuser
 
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
+    user: redis  # Redis image already has a non-root user
 
   worker:
     build: 
@@ -41,13 +47,21 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend:/app
+      - backend_venv:/app/.venv
+      - backend_logs:/app/logs
     environment:
       - PYTHON_VERSION=3.12.4
       - DJANGO_SETTINGS_MODULE=config.settings
       - DOCKER_CONTAINER=1
+      - DJANGO_LOG_DIR=/app/logs
     env_file:
       - ./backend/.env
     depends_on:
       - redis
       - backend
     command: python manage.py qcluster
+    user: myuser
+
+volumes:
+  backend_venv:
+  backend_logs:

@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a non-root user
+RUN useradd -m myuser
+
 # Copy the requirements file into the container
 COPY requirements.txt .
 
@@ -27,6 +30,12 @@ COPY . .
 
 # Make the entrypoint script executable
 RUN chmod +x /app/entrypoint.sh
+
+# Change ownership of the app directory to the non-root user
+RUN chown -R myuser:myuser /app
+
+# Switch to the non-root user
+USER myuser
 
 # Expose the port the app runs on
 EXPOSE 5000

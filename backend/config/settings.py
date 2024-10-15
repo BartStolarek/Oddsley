@@ -47,30 +47,26 @@ DEBUG = ENVIRONMENT != 'Production'
 LOGGING_LEVEL = os.getenv("DJANGO_LOGGING", "INFO")
 
 # Loguru configuration
-logger.remove()  # Remove default handler
-
-log_dir = BASE_DIR / "logs"
-log_dir.mkdir(exist_ok=True)
+log_dir = os.getenv('DJANGO_LOG_DIR', BASE_DIR / "logs")
+os.makedirs(log_dir, exist_ok=True)
 
 now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+log_file = os.path.join(log_dir, f"Django-{now}.log")
 
-logger.configure(
-    handlers=[
-        {
-            "sink": sys.stderr,
-            "format": "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-            "level": "DEBUG" if DEBUG else "INFO",
-            "colorize": True,
-        },
-        {
-            "sink": log_dir / f"Django-{now}.log",
-            "format": "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
-            "rotation": "10 MB",
-            "compression": "zip",
-            "level": "DEBUG" if DEBUG else "INFO",
-            "enqueue": True,
-        },
-    ]
+logger.add(
+    sys.stderr,
+    format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    level="DEBUG" if DEBUG else "INFO",
+    colorize=True,
+)
+
+logger.add(
+    log_file,
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+    rotation="10 MB",
+    compression="zip",
+    level="DEBUG" if DEBUG else "INFO",
+    enqueue=True,
 )
 
 
@@ -309,3 +305,7 @@ Q_CLUSTER = {
         'db': int(os.getenv('Q_CLUSTER_REDIS_DB', 0)),
     }
 }
+
+# The Odds API
+THE_ODDS_API_KEY = os.getenv('THE_ODDS_API_KEY')
+THE_ODDS_API_BASE_URL = os.getenv('THE_ODDS_API_BASE_URL')

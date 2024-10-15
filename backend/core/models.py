@@ -19,6 +19,19 @@ class Sport(models.Model):
 
     def __str__(self):
         return self.title
+    
+    @classmethod
+    def update_or_create_from_api(cls, sport_data):
+        return cls.objects.update_or_create(
+            key=sport_data['key'],
+            defaults={
+                'group': sport_data['group'],
+                'title': sport_data['title'],
+                'description': sport_data['description'],
+                'active': sport_data['active'],
+                'has_outrights': sport_data['has_outrights']
+            }
+        )
 
 
 class Competition(models.Model):

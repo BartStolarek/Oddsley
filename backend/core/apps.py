@@ -6,5 +6,4 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-        # This will ensure tasks are loaded and registered
-        pass
+        from . import tasks

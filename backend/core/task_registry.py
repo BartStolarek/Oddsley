@@ -19,3 +19,11 @@ class TaskRegistry:
         except ImportError:
             raise ValueError(
                 f"Task {name} not found in registry or as importable string")
+            
+    @classmethod
+    def run_task(cls, name, *args, **kwargs):
+        task = cls.get_task(name)
+        if task:
+            return task(*args, **kwargs)
+        else:
+            raise ValueError(f"Task {name} not found in registry")

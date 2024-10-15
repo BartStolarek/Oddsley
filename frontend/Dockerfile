@@ -4,6 +4,9 @@ FROM node:18-alpine
 # Install necessary dependencies
 RUN apk add --no-cache libc6-compat
 
+# Create a non-root user
+RUN adduser -D myuser
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -18,6 +21,12 @@ COPY . .
 
 # Build the app
 RUN npm run build
+
+# Change ownership of the app directory to the non-root user
+RUN chown -R myuser:myuser /app
+
+# Switch to the non-root user
+USER myuser
 
 # Expose port 3000
 EXPOSE 3000
