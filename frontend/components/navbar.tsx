@@ -21,7 +21,7 @@ import {
   TwitterIcon,
   GithubIcon,
   DiscordIcon,
-  HeartFilledIcon,
+  AccountIcon,
   SearchIcon,
   Logo,
 } from "@/components/icons";
@@ -91,17 +91,16 @@ export const Navbar = () => {
           </Link>
           <ThemeSwitch />
         </NavbarItem>
-        <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>
+        
         <NavbarItem className="hidden md:flex">
           <Button
-            isExternal
             as={Link}
             className="text-sm font-normal text-default-600 bg-default-100"
-            href={siteConfig.links.sponsor}
-            startContent={<HeartFilledIcon className="text-danger" />}
+            href={siteConfig.links.authentication}
+            startContent={<AccountIcon className="text-danger" />}
             variant="flat"
           >
-            Sponsor
+            Login
           </Button>
         </NavbarItem>
       </NavbarContent>

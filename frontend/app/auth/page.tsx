@@ -130,7 +130,7 @@ export default function AuthPage() {
         </CardBody>
         <CardFooter className="flex justify-center">
           <p>
-            {isLogin ? "Don't have an account?" : "Already have an account?"}
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
             <Link href="#" onClick={toggleAuthMode}>
               {isLogin ? "Sign up" : "Login"}
             </Link>
