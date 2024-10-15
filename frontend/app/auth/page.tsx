@@ -38,7 +38,7 @@ export default function AuthPage() {
         });
         localStorage.setItem("access_token", data.access);
         localStorage.setItem("refresh_token", data.refresh);
-        router.push("/dashboard");
+        router.push("/");
       } else {
         if (formData.password !== formData.confirmPassword) {
           setError("Passwords do not match");
