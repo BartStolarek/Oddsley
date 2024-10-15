@@ -319,8 +319,8 @@ allauth/
 # Django CMS
 cms/
 
-# Django Tastypie
-api/
+# # Django Tastypie
+# api/
 
 # Django Oscar
 oscar/
