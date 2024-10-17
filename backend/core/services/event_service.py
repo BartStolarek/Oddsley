@@ -27,7 +27,7 @@ class EventService:
         if not isinstance(events_data, list):
             raise ValueError("events_data must be a list")
         
-        required_keys = {"key", "group", "title", "description", "active", "has_outrights"}
+        required_keys = {"id", "sport_key", "sport_title", "commence_time", "home_team", "away_team"}
         
         for event in events_data:
             if not isinstance(event, dict):
@@ -75,6 +75,21 @@ class EventService:
         except Exception as e:
             logger.error(f"Error upserting events: {str(e)}")
             raise
+        
+    @transaction.atomic
+    def get_events(self, **kwargs) -> list[dict]:
+        """ Get events data from the database
+
+        Args:
+            **kwargs: Arbitrary keyword arguments for filtering
+
+        Returns:
+            list[dict]: List of events data
+        """
+        logger.debug(f"Getting sports with filters: {kwargs}")
+        events = Event.objects.filter(**kwargs).values() if kwargs else Event.objects.all().values()
+        logger.debug(f"Got {len(events)} sports")
+        return list(events)
         
     def __del__(self):
         logger.debug("EventService terminated")

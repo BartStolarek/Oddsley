@@ -26,10 +26,17 @@ class UpdateEventsTask(BaseTask):
         event_service = EventService()
 
         try:
-            sports_data = api_service.get_sports(kwargs)
-            updated_count = event_service.upsert_sports(sports_data)
-            return f"OddsAPI returned {len(sports_data)} sports, and successfully upserted {updated_count} into database."
+            
+            if kwargs.get('sport'):
+                sport = kwargs['sport']
+            else:
+                logger.error("Task requires a 'sport' keyword argument, e.g. 'sport=americanfootball_nfl'. Call 'get_sports_task' to get a list of available sports. Example of calling command correctly 'python manage.py task_run update_events_task -kw sport=americanfootball_nfl'")
+                raise ValueError("Insufficient arguments provided to task")
+            
+            events_data = api_service.get_events(sport=sport, kwargs=kwargs)
+            updated_count = event_service.upsert_events(events_data)
+            return f"OddsAPI returned {len(events_data)} events, and successfully upserted {updated_count} into database."
         except Exception as e:
-            logger.info(f"Error updating sports: {str(e)}")
+            logger.error(f"Error updating sports: {str(e)}")
             return "Error updating sports"
 
