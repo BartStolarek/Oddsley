@@ -1,6 +1,7 @@
 from django.core.management import call_command
 from django.db import connections
 from django.db.migrations.executor import MigrationExecutor
+from loguru import logger
 
 class BaseTask:
     @classmethod
@@ -13,10 +14,10 @@ class BaseTask:
         connection = connections['default']
         executor = MigrationExecutor(connection)
         if executor.migration_plan(executor.loader.graph.leaf_nodes()):
-            print('Applying database migrations...')
+            logger.info('Applying database migrations...')
             call_command('migrate', no_input=True)
         else:
-            print('Database up to date, no migrations needed')
+            logger.info('Database up to date, no migrations needed')
 
     @classmethod
     def execute(cls, *args, **kwargs):

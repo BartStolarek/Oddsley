@@ -91,6 +91,39 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.home_team} vs {self.away_team}"
+    
+    @classmethod
+    def update_or_create_from_api(cls, event_data):
+        # Ensure Sport exists
+        sport, _ = Sport.objects.get_or_create(key=event_data['sport_key'])
+        
+        # Get or create Teams
+        home_team, _ = Team.objects.get_or_create(
+            name=event_data['home_team'],
+            sport=sport
+        )
+        away_team, _ = Team.objects.get_or_create(
+            name=event_data['away_team'],
+            sport=sport
+        )
+        
+        # Get or create Competition (consider using a more specific name)
+        competition, _ = Competition.objects.get_or_create(
+            sport=sport,
+            name=event_data.get('competition_name', event_data['sport_title'])
+        )
+        
+        return cls.objects.update_or_create(
+            id=event_data['id'],
+            defaults={
+                'sport': sport,
+                'competition': competition,
+                'commence_time': event_data['commence_time'],
+                'home_team': home_team,
+                'away_team': away_team,
+                'status': event_data.get('status', 'scheduled')  # Assuming status is optional
+            }
+        )
 
 
 class OddsSnapshot(models.Model):
