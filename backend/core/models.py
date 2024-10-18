@@ -1,6 +1,7 @@
 from django.db import models
 
 
+
 class Region(models.Model):
     key = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=50)
@@ -33,6 +34,7 @@ class Sport(models.Model):
             }
         )
 
+    
 
 class Competition(models.Model):
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
@@ -41,7 +43,6 @@ class Competition(models.Model):
     def __str__(self):
         return f"{self.sport.title} - {self.name}"
 
-
 class Team(models.Model):
     name = models.CharField(max_length=100)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
@@ -49,24 +50,6 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class Bookmaker(models.Model):
-    key = models.CharField(max_length=50, unique=True)
-    title = models.CharField(max_length=100)
-    regions = models.ManyToManyField(Region)
-
-    def __str__(self):
-        return self.title
-
-
-class Market(models.Model):
-    key = models.CharField(max_length=50)
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
 
 class Event(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
@@ -91,7 +74,7 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.home_team} vs {self.away_team}"
-    
+
     @classmethod
     def update_or_create_from_api(cls, event_data):
         # Ensure Sport exists
@@ -125,33 +108,6 @@ class Event(models.Model):
             }
         )
 
-
-class OddsSnapshot(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    bookmaker = models.ForeignKey(Bookmaker, on_delete=models.CASCADE)
-    market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField()
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        unique_together = ('event', 'bookmaker', 'market', 'timestamp')
-
-    def __str__(self):
-        return f"{self.event} - {self.bookmaker} - {self.market} - {self.timestamp}"
-
-
-class Outcome(models.Model):
-    snapshot = models.ForeignKey(OddsSnapshot,
-                                 on_delete=models.CASCADE,
-                                 related_name='outcomes')
-    name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    point = models.FloatField(null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.name} - {self.price}"
-
-
 class EventResult(models.Model):
     event = models.OneToOneField(Event, on_delete=models.CASCADE)
     home_score = models.IntegerField(null=True, blank=True)
@@ -165,3 +121,79 @@ class EventResult(models.Model):
 
     def __str__(self):
         return f"{self.event}: {self.home_score} - {self.away_score}"
+
+class OddsSnapshot(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField()
+    previous_timestamp = models.DateTimeField(null=True, blank=True)
+    next_timestamp = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('event', 'timestamp')
+
+    def __str__(self):
+        return f"{self.event} - {self.timestamp}"
+
+
+    
+
+
+class Odds(models.Model):
+    odds_snapshot = models.ForeignKey(OddsSnapshot, on_delete=models.CASCADE)
+    event_id = models.ForeignKey(Event, on_delete=models.CASCADE)
+
+class OddsSnapshot(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField()
+    previous_timestamp = models.DateTimeField(null=True, blank=True)
+    next_timestamp = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('event', 'timestamp')
+
+    def __str__(self):
+        return f"{self.event} - {self.timestamp}"
+
+
+    def __str__(self):
+        return self.title
+
+class Bookmaker(models.Model):
+    odds_snapshot = models.ForeignKey(OddsSnapshot, on_delete=models.CASCADE, related_name='bookmakers')
+    key = models.CharField(max_length=50)
+    title = models.CharField(max_length=100)
+    last_update = models.DateTimeField()
+
+    class Meta:
+        unique_together = ('odds_snapshot', 'key')
+
+    def __str__(self):
+        return f"{self.title} - {self.odds_snapshot}"
+
+class Market(models.Model):
+    bookmaker = models.ForeignKey(Bookmaker, on_delete=models.CASCADE, related_name='markets')
+    key = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = ('bookmaker', 'key')
+
+    def __str__(self):
+        return f"{self.key} - {self.bookmaker}"
+
+class Outcome(models.Model):
+    market = models.ForeignKey(Market, on_delete=models.CASCADE, related_name='outcomes')
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    point = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('market', 'name')
+
+    def __str__(self):
+        return f"{self.name} - {self.price}"
+    
+    
+
+
+
+

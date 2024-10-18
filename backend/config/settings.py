@@ -20,6 +20,7 @@ from datetime import datetime
 from pathlib import Path
 from loguru import logger
 import logging  # Add this import
+import re
 
 runserver.default_port = "5000"
 
@@ -53,11 +54,17 @@ os.makedirs(log_dir, exist_ok=True)
 now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 log_file = os.path.join(log_dir, f"Django-{now}.log")
 
+# Custom filter to remove API keys
+def remove_api_keys(record):
+    record["message"] = re.sub(r'API=\S+', 'API=[REDACTED]', record["message"])
+    return True
+
 logger.add(
     sys.stderr,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     level="DEBUG" if DEBUG else "INFO",
     colorize=True,
+    filter=remove_api_keys
 )
 
 logger.add(
@@ -67,8 +74,8 @@ logger.add(
     compression="zip",
     level="DEBUG" if DEBUG else "INFO",
     enqueue=True,
+    filter=remove_api_keys
 )
-
 
 # Intercept Django logging
 class InterceptHandler(logging.Handler):
