@@ -1,6 +1,7 @@
 from django.db import transaction
 from core.models import Odd
 from loguru import logger
+from datetime import datetime
 
 
 
@@ -25,20 +26,13 @@ class OddService:
             ValueError: If any key in a sport does not have the expected type
         """
         logger.debug("Validating odds data")
-        if not isinstance(data, dict):
-            raise ValueError("odds_data must be a dict")
         
-        required_snapshot_keys = {"timestamp", "previous_timestamp", "next_timestamp", "data"}
-        
-        if not set(data.keys()) == required_snapshot_keys:
-            raise ValueError(f"Each snapshot must have exactly these keys: {required_snapshot_keys}")
-        
-        if not isinstance(data['data'], list):
+        if not isinstance(data, list):
             raise ValueError("odds_data['data'] must be a list")
         
         required_odds_keys = {"id", "sport_key", "sport_title", "commence_time", "home_team", "away_team", "bookmakers"}
         
-        for odd in data['data']:
+        for odd in data:
             if not isinstance(odd, dict):
                 raise ValueError("Each odd in odds_data must be a dictionary")
             
@@ -61,7 +55,7 @@ class OddService:
         logger.debug("odds data is valid")
 
     @transaction.atomic
-    def upsert_odds(self, data: list[dict]) -> int:
+    def upsert_odds(self, data: list[dict], **kwargs) -> int:
         """ Upsert odds data into the database
 
         Args:
@@ -73,24 +67,27 @@ class OddService:
         logger.debug("Upserting odds")
         try:
             self.validate_odds_data(data)
-            
-            updated_count = 0
-            created_count = 0
-            
-            odds_data = data['data']
-            
-            for odd in odds_data['data']:
-                obj, created = Odd.upsert_from_api(odd)
-                if not created:
-                    updated_count += 1
-                else:
-                    created_count += 1
-            total_count = updated_count + created_count
-            logger.debug(f"Upserted {total_count} odds, {created_count} were created and {updated_count} were updated.")
-            return total_count
-        except Exception as e:
-            logger.error(f"Error upserting odds: {str(e)}")
+        except ValueError as e:
+            logger.error(f"Error validating odds data: {str(e)}")
             raise
+        
+        updated_count = 0
+        created_count = 0
+        
+        
+        for odd in data:
+            try:
+                obj, created = Odd.upsert_from_api(odd, **kwargs)
+            except Exception as e:
+                logger.error(f"Error upserting odd: {str(e)}, data: {odd}")
+            if not created:
+                updated_count += 1
+            else:
+                created_count += 1
+        total_count = updated_count + created_count
+        logger.debug(f"Upserted {total_count} odds, {created_count} were created and {updated_count} were updated.")
+        return total_count
+        
     
     @transaction.atomic
     def get_odds(self, **kwargs) -> list[dict]:

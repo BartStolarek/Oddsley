@@ -36,6 +36,8 @@ class UpdateOddsTask(BaseTask):
                 except ValueError:
                     logger.error(f"Date value provided is not in the correct format, should be 'YYYY-MM-DD/HH:MM:SS', e.g. '2021-09-01/00:00:00' what was provided was '{kwargs[param]}'")
                     raise ValueError("Incorrect date format provided")
+                
+        
                     
     
     @classmethod
@@ -48,15 +50,26 @@ class UpdateOddsTask(BaseTask):
         logger.info("Executing UpdateOddsTask...")
         api_service = OddsAPIService(base_url=settings.THE_ODDS_API_BASE_URL, api_key=settings.THE_ODDS_API_KEY)
         odd_service = OddService()
-
         try:
             
             cls.check_required_parameters(kwargs)
             
-            odds_data = api_service.get_historical_odds(**kwargs)
-            upserted_count = odd_service.upsert_odds(odds_data)
-            return f"OddsAPI returned {len(odds_data['data'])} odds, and successfully upserted {upserted_count} into database."
+            odds_data = api_service.get_historical_odds(**kwargs) if kwargs.get("date") else api_service.get_odds(**kwargs)
+            
+            if kwargs.get("date"):
+                updated_count = odd_service.upsert_odds(
+                    odds_data['data'],
+                    timestamp=odds_data['timestamp'],
+                    previous_timestamp=odds_data['previous_timestamp'],
+                    next_timestamp=odds_data['next_timestamp']) 
+            else:
+                updated_count = odd_service.upsert_odds(odds_data)
+            
+            odds_api_len = len(odds_data['data']) if kwargs.get("date") else len(odds_data)
+            
+            return f"OddsAPI returned {odds_api_len} odds, and successfully upserted {updated_count} into database."
         except Exception as e:
-            logger.error(f"Error updating sports: {str(e)}")
-            return "Error updating sports"
-
+            logger.error(f"Error updating odds: {str(e)}")
+            return str(e)
+        
+        

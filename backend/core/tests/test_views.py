@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Competition, Sport, Team
+from core.models import Sport, Team
 
 
 class HomeViewTests(TestCase):
@@ -60,34 +60,6 @@ class SportViewSetTests(TestCase):
         self.assertEqual(Sport.objects.count(), 2)
 
 
-class CompetitionViewSetTests(TestCase):
-
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create_user(username='testuser',
-                                             password='testpass')
-        self.client.force_authenticate(user=self.user)
-        self.sport = Sport.objects.create(key='football',
-                                          group='Team Sports',
-                                          title='Football')
-        self.competition = Competition.objects.create(sport=self.sport,
-                                                      name='Premier League')
-
-    def test_competition_list(self):
-        response = self.client.get(
-            reverse('competition-list'))  # Adjust URL name as needed
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
-    def test_create_competition(self):
-        response = self.client.post(reverse('competition-list'), {
-            'sport': self.sport.id,
-            'name': 'La Liga'
-        })
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Competition.objects.count(), 2)
-
-
 class TeamViewSetTests(TestCase):
 
     def setUp(self):
@@ -98,8 +70,7 @@ class TeamViewSetTests(TestCase):
         self.sport = Sport.objects.create(key='football',
                                           group='Team Sports',
                                           title='Football')
-        self.competition = Competition.objects.create(sport=self.sport,
-                                                      name='Championship')
+
 
     def test_create_team(self):
         response = self.client.post(
@@ -107,8 +78,6 @@ class TeamViewSetTests(TestCase):
             {
                 'name': 'Team A',
                 'sport': self.sport.id,
-                'competitions': [self.competition.id
-                                 ]  # Include a valid competition ID
             })
 
         self.assertEqual(response.status_code,

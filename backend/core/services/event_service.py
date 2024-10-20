@@ -66,7 +66,7 @@ class EventService:
             
             updated_count = 0
             for event_data in events_data:
-                event, created = Event.update_or_create_from_api(event_data)
+                event, created = Event.upsert_from_api(event_data)
                 if not created:
                     updated_count += 1
             

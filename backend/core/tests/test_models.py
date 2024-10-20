@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from core.models import Competition, Sport
+from core.models import Sport
 
 
 class SportModelTest(TestCase):
@@ -16,16 +16,3 @@ class SportModelTest(TestCase):
         self.assertEqual(sport.title, "Football")
         self.assertTrue(sport.active)
 
-
-class CompetitionModelTest(TestCase):
-
-    def setUp(self):
-        sport = Sport.objects.create(key="football",
-                                     group="Ball Sports",
-                                     title="Football",
-                                     active=True)
-        Competition.objects.create(sport=sport, name="Premier League")
-
-    def test_competition_creation(self):
-        competition = Competition.objects.get(name="Premier League")
-        self.assertEqual(competition.sport.title, "Football")

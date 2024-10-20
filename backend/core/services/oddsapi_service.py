@@ -18,7 +18,7 @@ class OddsAPIService:
         
         Response format:
         [
-            {
+            {s
                 "key": "americanfootball_ncaaf",
                 "group": "American Football",
                 "title": "NCAAF",
@@ -67,7 +67,7 @@ class OddsAPIService:
         
         return response.json()
     
-    def get_events(self, sport, kwargs) -> list[dict]:
+    def get_events(self, sport, **kwargs) -> list[dict]:
         """ Get events data from the OddsAPI for a specified sport
 
         Data returned from OddsAPI is a list of dictionaries, each containing information about an event.
@@ -115,6 +115,63 @@ class OddsAPIService:
         try:
             response.raise_for_status()
             logger.debug(f"Obtained {len(response.json())} events in response")
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"Error fetching events data: {e}")
+            raise  # Re-raise the exception to be caught in the calling function
+
+        return response.json()
+    
+    def get_historical_events(self, sport, date, **kwargs) -> list[dict]:
+        """ Get events data from the OddsAPI for a specified sport
+
+        Data returned from OddsAPI is a list of dictionaries, each containing information about an event.
+
+        Response format:
+        [
+            {
+                "id": "a512a48a58c4329048174217b2cc7ce0",
+                "sport_key": "americanfootball_nfl",
+                "sport_title": "NFL",
+                "commence_time": "2023-01-01T18:00:00Z",
+                "home_team": "Atlanta Falcons",
+                "away_team": "Arizona Cardinals"
+            },
+            ...
+        ]
+
+        Args:
+            sport (str): The sport key obtained from calling the /sports endpoint
+            **kwargs: Additional keyword arguments to pass to the API
+
+        Returns:
+            list[dict]: List of events data
+        """
+        logger.debug(f"Getting historical events data for sport: {sport}")
+
+        params = {
+            "apiKey": self.api_key,
+            "date": date.isoformat() + "Z"
+        }
+
+        # Add optional parameters
+        for key, value in kwargs.items():
+            if key in ["dateFormat", "eventIds", "commenceTimeFrom", "commenceTimeTo"]:
+                if isinstance(value, list):
+                    params[key] = ",".join(value)
+                elif isinstance(value, datetime):
+                    params[key] = value.isoformat() + "Z"
+                else:
+                    params[key] = value
+
+        # log debug with params but exclude the api key
+        logger.debug(f"Requesting events data with base_url={self.base_url}, sport={sport}, and params {exclude_api_key(params)}")
+        response = requests.get(f"{self.base_url}/historical/sports/{sport}/events", params=params)
+        logger.debug(f"Received response with status code {response.status_code}")
+
+        # Raise an exception if the request was unsuccessful
+        try:
+            response.raise_for_status()
+            logger.debug(f"Obtained {len(response.json()['data'])} events in response")
         except requests.exceptions.HTTPError as e:
             logger.error(f"Error fetching events data: {e}")
             raise  # Re-raise the exception to be caught in the calling function
@@ -213,12 +270,15 @@ class OddsAPIService:
             dict: Historical odds data
         """
         
+        
+        
         params = {
             "apiKey": self.api_key,
-            "regions": ",".join(regions),
-            "markets": ",".join(markets),
-            "date": date.isoformat()
         }
+        
+        params['regions'] = ",".join(regions) if isinstance(regions, list) else regions
+        params['markets'] = ",".join(markets) if isinstance(markets, list) else markets
+        params['date'] = date.isoformat() + "Z"
         
         
         # Add optional parameters
@@ -229,15 +289,17 @@ class OddsAPIService:
                 if isinstance(value, list):
                     params[key] = ",".join(value)
                 elif isinstance(value, datetime):
-                    params[key] = value.isoformat()
+                    params[key] = value.isoformat() + "Z"
                 else:
                     params[key] = value
 
         url = f"{self.base_url}/historical/sports/{sport}/odds"
         
         logger.debug(f"Requesting historical odds data with base_url={self.base_url}, sport={sport}, and params {exclude_api_key(params)}")
-        response = requests.get(url, params=params)
-        logger.debug(f"Received response with status code {response.status_code}")
+
+        response = requests.get(url=url, params=params)
+        logger.debug(f"Received response with status code {response.status_code}, token requests used: {response.headers.get('x-requests-used')}, token requests remaining: {response.headers.get('x-requests-remaining')}, last request used: {response.headers.get('x-requests-last')} tokens")
+        
         response.raise_for_status()
         return response.json()
             
