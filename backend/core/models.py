@@ -1,8 +1,11 @@
 from django.db import models
+from django.utils import timezone
+from django.db import transaction
+from django.utils.dateparse import parse_datetime
 
 
 class Region(models.Model):
-    key = models.CharField(max_length=10, unique=True)
+    key = models.CharField(primary_key=True, max_length=10, unique=True)
     name = models.CharField(max_length=50)
 
     def __str__(self):
@@ -10,7 +13,7 @@ class Region(models.Model):
 
 
 class Sport(models.Model):
-    key = models.CharField(max_length=50, unique=True)
+    key = models.CharField(primary_key=True, max_length=50, unique=True)
     group = models.CharField(max_length=100)
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -21,7 +24,7 @@ class Sport(models.Model):
         return self.title
     
     @classmethod
-    def update_or_create_from_api(cls, sport_data):
+    def upsert_from_api(cls, sport_data):
         return cls.objects.update_or_create(
             key=sport_data['key'],
             defaults={
@@ -38,6 +41,9 @@ class Competition(models.Model):
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
 
+    class Meta:
+        unique_together = ('sport', 'name')
+        
     def __str__(self):
         return f"{self.sport.title} - {self.name}"
 
@@ -45,17 +51,20 @@ class Competition(models.Model):
 class Team(models.Model):
     name = models.CharField(max_length=100)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
-    competitions = models.ManyToManyField(Competition)
+    competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ('sport', 'competition', 'name')
+    
     def __str__(self):
         return self.name
 
 
 class Event(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
+    id = models.CharField(max_length=100, primary_key=True)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
-    commence_time = models.DateTimeField()
+    commence_time = models.DateTimeField(blank=True, null=True)
     home_team = models.ForeignKey(Team,
                                   on_delete=models.CASCADE,
                                   related_name='home_events')
@@ -76,7 +85,7 @@ class Event(models.Model):
         return f"{self.home_team} vs {self.away_team}"
 
     @classmethod
-    def update_or_create_from_api(cls, event_data):
+    def upsert_from_api(cls, event_data):
         # Ensure Sport exists
         sport, _ = Sport.objects.get_or_create(key=event_data['sport_key'])
         
@@ -126,7 +135,7 @@ class EventResult(models.Model):
 
 class Odd(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(default=timezone.now)
     previous_timestamp = models.DateTimeField(null=True, blank=True)
     next_timestamp = models.DateTimeField(null=True, blank=True)
 
@@ -136,13 +145,55 @@ class Odd(models.Model):
 
     def __str__(self):
         return f"{self.event} - {self.timestamp}"
+    
+    @classmethod
+    def upsert_from_api(cls, odd_data):
+        with transaction.atomic():
+            event = Event.objects.get(id=odd_data['id'])
+            
+            odd, created = cls.objects.update_or_create(
+                event=event,
+                timestamp=parse_datetime(odd_data['timestamp']),
+                defaults={
+                    'previous_timestamp': parse_datetime(odd_data['previous_timestamp']),
+                    'next_timestamp': parse_datetime(odd_data['next_timestamp'])
+                }
+            )
+            
+            for bookmaker_data in odd_data['bookmakers']:
+                bookmaker, _ = Bookmaker.objects.update_or_create(
+                    odd=odd,
+                    key=bookmaker_data['key'],
+                    defaults={
+                        'title': bookmaker_data['title'],
+                        'last_update': parse_datetime(bookmaker_data['last_update']),
+                    }
+                )
 
+                for market_data in bookmaker_data['markets']:
+                    market, _ = Market.objects.update_or_create(
+                        bookmaker=bookmaker,
+                        key=market_data['key'],
+                    )
+
+                    for outcome_data in market_data['outcomes']:
+                        Outcome.objects.update_or_create(
+                            market=market,
+                            name=outcome_data['name'],
+                            defaults={
+                                'price': outcome_data['price'],
+                                'point': outcome_data.get('point'),
+                            }
+                        )
+
+            return odd, created
+        
 
 class Bookmaker(models.Model):
     odd = models.ForeignKey(Odd, on_delete=models.CASCADE, related_name='bookmakers')
     key = models.CharField(max_length=50)
     title = models.CharField(max_length=100)
-    last_update = models.DateTimeField()
+    last_update = models.DateTimeField(default=timezone.now, null=True, blank=True)
     
     class Meta:
         unique_together = ('odd', 'key')
@@ -165,7 +216,7 @@ class Market(models.Model):
 class Outcome(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE, related_name='outcomes')
     name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=4)
     point = models.FloatField(null=True, blank=True)
 
     class Meta:

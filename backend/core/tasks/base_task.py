@@ -11,6 +11,9 @@ class BaseTask:
 
     @staticmethod
     def apply_migrations():
+        logger.info('Creating migrations...')
+        call_command('makemigrations', no_input=True)
+        
         connection = connections['default']
         executor = MigrationExecutor(connection)
         if executor.migration_plan(executor.loader.graph.leaf_nodes()):

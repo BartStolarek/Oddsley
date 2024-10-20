@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import RegisterView
 
 from . import views
-from .views import (CompetitionViewSet, EventViewSet, OddsSnapshotViewSet,
+from .views import (CompetitionViewSet, EventViewSet, OddViewSet,
                     OutcomeViewSet, SportViewSet, TeamViewSet, UserViewSet)
 
 router = DefaultRouter()
@@ -12,7 +12,7 @@ router.register(r'sports', SportViewSet)
 router.register(r'competitions', CompetitionViewSet)
 router.register(r'teams', TeamViewSet)
 router.register(r'events', EventViewSet)
-router.register(r'odds-snapshots', OddsSnapshotViewSet)
+router.register(r'odd', OddViewSet)
 router.register(r'outcomes', OutcomeViewSet)
 
 urlpatterns = [

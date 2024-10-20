@@ -77,5 +77,7 @@ class Command(BaseCommand):
         try:
             return ast.literal_eval(value)
         except (ValueError, SyntaxError):
+            if ',' in value:
+                return value.split(',')
             # If it's not a valid Python literal, return it as a string
             return value

@@ -6,9 +6,9 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from .serializers import RegisterSerializer
 
-from .models import Competition, Event, OddsSnapshot, Outcome, Sport, Team
+from .models import Competition, Event, Odd, Outcome, Sport, Team
 from .serializers import (CompetitionSerializer, EventSerializer,
-                          OddsSnapshotSerializer, OutcomeSerializer,
+                          OddSerializer, OutcomeSerializer,
                           SportSerializer, TeamSerializer, UserSerializer)
 
 
@@ -88,9 +88,9 @@ class EventViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class OddsSnapshotViewSet(viewsets.ModelViewSet):
-    queryset = OddsSnapshot.objects.all()
-    serializer_class = OddsSnapshotSerializer
+class OddViewSet(viewsets.ModelViewSet):
+    queryset = Odd.objects.all()
+    serializer_class = OddSerializer
     permission_classes = [IsAuthenticated]
 
 

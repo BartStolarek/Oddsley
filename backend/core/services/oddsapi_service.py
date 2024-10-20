@@ -1,5 +1,6 @@
 import requests
 from loguru import logger
+from datetime import datetime
 
 
 class OddsAPIService:
@@ -120,55 +121,126 @@ class OddsAPIService:
 
         return response.json()
     
-    def get_odds(self, sport, regions, kwargs) -> list[dict]:
-        """ Get odds data from the OddsAPI for a specified sport
+    def get_historical_odds(self, sport, regions, markets, date, **kwargs) -> dict:
+        """ Get historical odds data from the OddsAPI
 
-        Data returned from OddsAPI is a list of dictionaries, each containing information about an event and its odds.
+        Data returned from OddsAPI is a dictionary containing information about historical odds.
+
+        Response format:
+        {
+            "timestamp": "2023-11-29T22:40:39Z",
+            "previous_timestamp": "2023-11-29T22:35:39Z",
+            "next_timestamp": "2023-11-29T22:45:40Z",
+            "data": {
+                "id": "da359da99aa27e97d38f2df709343998",
+                "sport_key": "basketball_nba",
+                "sport_title": "NBA",
+                "commence_time": "2023-11-30T00:10:00Z",
+                "home_team": "Detroit Pistons",
+                "away_team": "Los Angeles Lakers",
+                "bookmakers": [
+                    {
+                        "key": "draftkings",
+                        "title": "DraftKings",
+                        "last_update": "2023-11-29T22:40:09Z",
+                        "markets": [
+                            {
+                                "key": "h2h_q1",
+                                "last_update": "2023-11-29T22:40:55Z",
+                                "outcomes": [
+                                    {
+                                        "name": "Detroit Pistons",
+                                        "price": 2.5
+                                    },
+                                    {
+                                        "name": "Los Angeles Lakers",
+                                        "price": 1.56
+                                    }
+                                ]
+                            },
+                            {
+                                "key": "player_points",
+                                "last_update": "2023-11-29T22:40:55Z",
+                                "outcomes": [
+                                    {
+                                        "name": "Over",
+                                        "description": "Anthony Davis",
+                                        "price": 1.83,
+                                        "point": 23.5
+                                    },
+                                    {
+                                        "name": "Under",
+                                        "description": "Anthony Davis",
+                                        "price": 1.91,
+                                        "point": 23.5
+                                    },
+                                    {
+                                        "name": "Over",
+                                        "description": "Ausar Thompson",
+                                        "price": 1.87,
+                                        "point": 11.5
+                                    },
+                                    {
+                                        "name": "Under",
+                                        "description": "Ausar Thompson",
+                                        "price": 1.87,
+                                        "point": 11.5
+                                    },
+                                    {
+                                        "name": "Over",
+                                        "description": "Cade Cunningham",
+                                        "price": 1.91,
+                                        "point": 23.5
+                                    },
+                                    {
+                                        "name": "Under",
+                                        "description": "Cade Cunningham",
+                                        "price": 1.83,
+                                        "point": 23.5
+                                    },
+                                    {
+                                        "name": "Over",
+                                        "description": "D'Angelo Russell",
+                                        "price": 1.87,
+                                        "point": 14.5
+                                    },
+                                    ...
 
         Args:
-            sport (str): The sport key obtained from calling the /sports endpoint
-            kwargs (dict): Additional keyword arguments to pass to the API
+            **kwargs: Additional keyword arguments to pass to the API
 
         Returns:
-            list[dict]: List of odds data
+            dict: Historical odds data
         """
-        logger.debug(f"Getting odds data for sport: {sport}")
-
-        params = {"apiKey": self.api_key}
-
-        # Add required parameters
-        params['sport'] = sport
-        params['regions'] = regions
         
-
+        params = {
+            "apiKey": self.api_key,
+            "regions": ",".join(regions),
+            "markets": ",".join(markets),
+            "date": date.isoformat()
+        }
+        
+        
         # Add optional parameters
-        optional_params = ['markets', 'dateFormat', 'oddsFormat', 'eventIds', 'bookmakers', 
-                           'commenceTimeFrom', 'commenceTimeTo']
-        for param in optional_params:
-            if param in kwargs:
-                params[param] = kwargs[param]
+        for key, value in kwargs.items():
+            if key in ["dateFormat", "oddsFormat", "eventIds", "bookmakers", 
+                       "commenceTimeFrom", "commenceTimeTo", "includeLinks", 
+                       "includeSids", "IncludeBetLimits"]:
+                if isinstance(value, list):
+                    params[key] = ",".join(value)
+                elif isinstance(value, datetime):
+                    params[key] = value.isoformat()
+                else:
+                    params[key] = value
 
-        # Handle boolean parameters
-        bool_params = ['includeLinks', 'includeSids', 'includeBetLimits']
-        for param in bool_params:
-            if param in kwargs and kwargs[param]:
-                params[param] = 'true'
-
-        # log debug with params but exclude the api key
-        logger.debug(f"Requesting odds data with base_url={self.base_url}, sport={sport}, and params {exclude_api_key(params)}")
-        response = requests.get(f"{self.base_url}/sports/{sport}/odds/", params=params)
+        url = f"{self.base_url}/historical/sports/{sport}/odds"
+        
+        logger.debug(f"Requesting historical odds data with base_url={self.base_url}, sport={sport}, and params {exclude_api_key(params)}")
+        response = requests.get(url, params=params)
         logger.debug(f"Received response with status code {response.status_code}")
-
-        # Raise an exception if the request was unsuccessful
-        try:
-            response.raise_for_status()
-            logger.debug(f"Obtained odds data for {len(response.json())} events in response")
-        except requests.exceptions.HTTPError as e:
-            logger.error(f"Error fetching odds data: {e}")
-            raise  # Re-raise the exception to be caught in the calling function
-
+        response.raise_for_status()
         return response.json()
-    
+            
     def __del__(self):
         logger.debug("OddsAPIService terminated")
         

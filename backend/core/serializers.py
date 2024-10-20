@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 
 
-from .models import Competition, Event, OddsSnapshot, Outcome, Sport, Team
+from .models import Competition, Event, Odd, Outcome, Sport, Team
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
@@ -63,10 +63,10 @@ class EventSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OddsSnapshotSerializer(serializers.ModelSerializer):
+class OddSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = OddsSnapshot
+        model = Odd
         fields = '__all__'
 
 
