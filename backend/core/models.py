@@ -61,16 +61,6 @@ class Event(models.Model):
     away_team = models.ForeignKey(Team,
                                   on_delete=models.CASCADE,
                                   related_name='away_events')
-    STATUS_CHOICES = [
-        ('scheduled', 'Scheduled'),
-        ('in_progress', 'In Progress'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
-        ('unknown', 'Unknown'),
-    ]
-    status = models.CharField(max_length=20,
-                              choices=STATUS_CHOICES,
-                              default='unknown')
 
     def __str__(self):
         return f"{self.home_team} vs {self.away_team}"
@@ -98,7 +88,6 @@ class Event(models.Model):
                 'commence_time': event_data['commence_time'],
                 'home_team': home_team,
                 'away_team': away_team,
-                'status': event_data.get('status', 'scheduled')  # Assuming status is optional
             }
         )
 
@@ -147,8 +136,8 @@ class Odd(models.Model):
                         'sport': Sport.objects.get(key=odd_data['sport_key']),
                         'commence_time': parse_datetime(odd_data['commence_time']),
                         'home_team': home_team,
-                        'away_team': away_team,
-                        'status': 'unknown'}
+                        'away_team': away_team
+                    }
                 )
             except Exception as e:
                 logger.error(f"Error updating or creating event model object with id: {odd_data['id']}: {str(e)}")
@@ -177,13 +166,8 @@ class Odd(models.Model):
         
             for bookmaker_data in odd_data['bookmakers']:
                 try:
-                    bookmaker, _ = Bookmaker.objects.update_or_create(
-                        odd=odd,
+                    bookmaker, _ = Bookmaker.objects.get_or_create(
                         key=bookmaker_data['key'],
-                        defaults={
-                            'title': bookmaker_data['title'],
-                            'last_update': parse_datetime(bookmaker_data['last_update']),
-                        }
                     )
                 except Exception as e:
                     logger.error(f"Error updating or creating bookmaker model object: {str(e)}, with odd id: {odd.id} and key: {bookmaker_data['key']}")
@@ -191,8 +175,7 @@ class Odd(models.Model):
                 
                 for market_data in bookmaker_data['markets']:
                     try:
-                        market, _ = Market.objects.update_or_create(
-                            bookmaker=bookmaker,
+                        market, _ = Market.objects.get_or_create(
                             key=market_data['key'],
                         )
                     except Exception as e:
@@ -206,6 +189,8 @@ class Odd(models.Model):
                             
                             
                             outcome, created = Outcome.objects.update_or_create(
+                                odd=odd,
+                                bookmaker=bookmaker,
                                 market=market,
                                 name=team,
                                 defaults={
@@ -225,37 +210,32 @@ class Odd(models.Model):
 
 
 class Bookmaker(models.Model):
-    odd = models.ForeignKey(Odd, on_delete=models.CASCADE, related_name='bookmakers')
-    key = models.CharField(max_length=50)
+    key = models.CharField(max_length=50, unique=True)
     title = models.CharField(max_length=100)
     last_update = models.DateTimeField(default=timezone.now, null=True, blank=True)
     
-    class Meta:
-        unique_together = ('odd', 'key')
 
     def __str__(self):
         return f"{self.title} - {self.odd}"
 
 
 class Market(models.Model):
-    bookmaker = models.ForeignKey(Bookmaker, on_delete=models.CASCADE, related_name='markets')
-    key = models.CharField(max_length=50)
-
-    class Meta:
-        unique_together = ('bookmaker', 'key')
+    key = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return f"{self.key} - {self.bookmaker}"
 
 
 class Outcome(models.Model):
+    odd = models.ForeignKey(Odd, on_delete=models.CASCADE)
+    bookmaker = models.ForeignKey(Bookmaker, on_delete=models.CASCADE)
     market = models.ForeignKey(Market, on_delete=models.CASCADE, related_name='outcomes')
     name = models.ForeignKey(Team, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=4)
     point = models.FloatField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('market', 'name')
+        unique_together = ('odd', 'bookmaker', 'market', 'name')
 
     def __str__(self):
         return f"{self.name} - {self.price}"

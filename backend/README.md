@@ -131,6 +131,12 @@ Example:
 python manage.py task_run hello_world_task
 ```
 
+#### Built-in Tasks
+
+| Task Name | Description | Flags | Keyword Arguments |
+| --- | --- | --- | --- |
+| `update_odds_task` | Calls the Odds API for get odds or get historical odds. If user provides flags, it will replace the 'date' parameter in the keyword arguments | --start <Datetime YYYY-MM-DD/HH:MM:DD> (optional)<br> --end <Datetime YYYY-MM-DD/HH:MM:DD> (optional)<br> --interval_value <integer> (optional)<br> --interval_unit <min/hour/day/week> (optional)| [Get odds parameters](https://the-odds-api.com/liveapi/guides/v4/#get-odds) |
+
 This command will execute the specified task immediately and display the result in the console. It's useful for testing tasks or running one-off operations.
 
 ### 6. Jobs
@@ -196,4 +202,9 @@ Django-Q is used for task scheduling in this project. The following commands are
 - `python manage.py sendtestemail`: Sends a test email to confirm your email settings are correct
 
 Remember to run these commands from your project's root directory. Some commands may require additional packages to be installed, especially for advanced testing and coverage features.
+
+
+## Database Schema
+
+![alt text](static/Database%20Schema.png)
 
