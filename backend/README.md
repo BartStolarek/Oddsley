@@ -124,7 +124,7 @@ The following is a list of useful Django management commands that you can use to
 
 The following commands are available for immediate task execution:
 
-- `python manage.py task_run <task_name> [--args arg1 arg2 ...]`: Runs a specified task immediately
+- `python manage.py task_run <task_name> <flags> -kw <keyword:arguments>`: Runs a specified task immediately
 
 Example:
 ```
@@ -136,6 +136,7 @@ python manage.py task_run hello_world_task
 | Task Name | Description | Flags | Keyword Arguments |
 | --- | --- | --- | --- |
 | `update_odds_task` | Calls the Odds API for get odds or get historical odds. If user provides flags, it will replace the 'date' parameter in the keyword arguments | --start <Datetime YYYY-MM-DD/HH:MM:DD> (optional)<br> --end <Datetime YYYY-MM-DD/HH:MM:DD> (optional)<br> --interval_value <integer> (optional)<br> --interval_unit <min/hour/day/week> (optional)| [Get odds parameters](https://the-odds-api.com/liveapi/guides/v4/#get-odds) |
+| `update_results_task` | Loads a CSV of results and tries to find the corresponding event by the sport, commence time, home team and away team | None | sport=<sport_key><br> csv=<csv_file_path in backend><br> tz=<csv_timezone> |
 
 This command will execute the specified task immediately and display the result in the console. It's useful for testing tasks or running one-off operations.
 
@@ -205,6 +206,5 @@ Remember to run these commands from your project's root directory. Some commands
 
 
 ## Database Schema
-
-![alt text](static/Database%20Schema.png)
+![alt text](static/db_relationship_diagram.png)
 

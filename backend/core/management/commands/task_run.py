@@ -4,6 +4,9 @@ from loguru import logger
 import ast
 import pandas as pd
 from datetime import datetime, timedelta
+from tqdm import tqdm
+from io import StringIO
+import sys
 
 class Command(BaseCommand):
     """ A command to run a specified task immediately or repeatedly within a date range
@@ -48,23 +51,60 @@ class Command(BaseCommand):
         end_time = datetime.strptime(end, '%Y-%m-%d/%H:%M:%S')
         interval_value = int(interval_value)
 
-        current_time = start_time
-        while current_time <= end_time:
-            logger.info(f"Running task for date: {current_time}")
-            kwargs['date'] = current_time.strftime('%Y-%m-%d/%H:%M:%S')
-            self.run_single_task(task_name, kwargs)
+        total_iterations = self.calculate_total_iterations(start_time, end_time, interval_value, interval_unit)
 
-            if interval_unit.startswith('minute'):
-                current_time += timedelta(minutes=interval_value)
-            elif interval_unit.startswith('hour'):
-                current_time += timedelta(hours=interval_value)
-            elif interval_unit.startswith('day'):
-                current_time += timedelta(days=interval_value)
-            elif interval_unit.startswith('week'):
-                current_time += timedelta(weeks=interval_value)
-            else:
-                logger.error(f"Invalid interval unit: {interval_unit}")
-                break
+        with tqdm(total=total_iterations, desc="Progress", unit="iteration") as pbar:
+            current_time = start_time
+            while current_time <= end_time:
+                # Capture the output of the task
+                captured_output = StringIO()
+                sys.stdout = captured_output
+                sys.stderr = captured_output
+
+                kwargs['date'] = current_time.strftime('%Y-%m-%d/%H:%M:%S')
+                self.run_single_task(task_name, kwargs)
+
+                # Restore standard output and error
+                sys.stdout = sys.__stdout__
+                sys.stderr = sys.__stderr__
+
+                # Update progress bar description with current time
+                pbar.set_description(f"Running task for date: {current_time}")
+
+                # Display captured output
+                task_output = captured_output.getvalue().strip()
+                if task_output:
+                    tqdm.write(task_output)
+
+                if interval_unit.startswith('minute'):
+                    current_time += timedelta(minutes=interval_value)
+                elif interval_unit.startswith('hour'):
+                    current_time += timedelta(hours=interval_value)
+                elif interval_unit.startswith('day'):
+                    current_time += timedelta(days=interval_value)
+                elif interval_unit.startswith('week'):
+                    current_time += timedelta(weeks=interval_value)
+                else:
+                    logger.error(f"Invalid interval unit: {interval_unit}")
+                    break
+
+                pbar.update(1)
+
+    def calculate_total_iterations(self, start_time, end_time, interval_value, interval_unit):
+        if interval_unit.startswith('minute'):
+            total_minutes = (end_time - start_time).total_seconds() / 60
+            return int(total_minutes / interval_value) + 1
+        elif interval_unit.startswith('hour'):
+            total_hours = (end_time - start_time).total_seconds() / 3600
+            return int(total_hours / interval_value) + 1
+        elif interval_unit.startswith('day'):
+            total_days = (end_time - start_time).days
+            return int(total_days / interval_value) + 1
+        elif interval_unit.startswith('week'):
+            total_weeks = (end_time - start_time).days / 7
+            return int(total_weeks / interval_value) + 1
+        else:
+            raise ValueError(f"Invalid interval unit: {interval_unit}")
 
     def run_single_task(self, task_name, kwargs):
         try:
